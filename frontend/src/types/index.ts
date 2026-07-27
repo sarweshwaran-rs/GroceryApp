@@ -10,6 +10,12 @@ export interface User {
     updatedAt: string;
 }
 
+export interface UserProps {
+    name: string;
+    email: string;
+    isAdmin: boolean;
+}
+
 export interface Address {
     _id: string;
     label: string;
