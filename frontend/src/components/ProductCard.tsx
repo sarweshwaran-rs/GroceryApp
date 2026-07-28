@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useNavigate } from "react-router-dom";
 import type { Product } from "../types";
 import { Plus, Star } from "lucide-react";
+import { useCart } from "../context/CartContext";
 
 interface Props {
     product: Product;
@@ -13,7 +12,8 @@ const ProductCard = ({ product }: Props) => {
     const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "$";
     const navigate = useNavigate()
 
-    const { addToCart } = { addToCart: (_data: any) => { } }
+    const { addToCart } = useCart()
+
     return (
         <div className="bg-white rounded-2xl overflow-hidden shadow hover:shadow-md transition-all duration-300 group animate-fade-in cursor-pointer"
             onClick={() => navigate(`/products/${product._id}`)}
