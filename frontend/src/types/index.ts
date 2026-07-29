@@ -1,3 +1,5 @@
+export type Location = {lat: number, lng:number}
+
 export interface User {
     _id: string;
     name: string;
@@ -60,7 +62,7 @@ export interface OrderItem {
     product: string;
     name: string;
     image: string;
-    ptice: number;
+    price: number;
     quantity: number;
     unit: string;
 }
@@ -87,8 +89,8 @@ export interface Order {
     tax: number;
     total: number;
     status: string;
-    satusHistory: {status: string; timestamp: string; note: string}[];
-    deliveryPartnet: DeliveryPartner | null;
+    statusHistory: {status: string; timestamp: string; note: string}[];
+    deliveryPartner: DeliveryPartner | null;
     deliveryOtp: string;
     isPaid: boolean;
     createdAt: string;
