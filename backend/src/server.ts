@@ -7,6 +7,7 @@ import authRouter from "./routes/auth.routes.js";
 import productRouter from "./routes/product.routes.js";
 import uploadRouter from "./routes/upload.route.js";
 import orderRouter from "./routes/order.routes.js";
+import addressRouter from "./routes/addresses.route.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/auth', authRouter)
 app.use('/api/products', productRouter)
 app.use('/api/upload', uploadRouter)
 app.use('/api/orders', orderRouter)
+app.use("/api/addresses", addressRouter)
 app.use('/api/inngest', serve({ client: inngest, functions }));
 
 // Error handling
