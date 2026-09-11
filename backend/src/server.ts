@@ -10,8 +10,11 @@ import orderRouter from "./routes/order.routes.js";
 import addressRouter from "./routes/addresses.route.js";
 import adminRouter from "./routes/admin.route.js";
 import deliveryPartnerRouter from "./routes/delivery-partner.route.js";
+import { stripeWebhook } from "./controllers/webhooks.controller.js";
 
 const app = express();
+
+app.post("/api/stripe", express.raw({type: 'application/json'}), stripeWebhook);
 
 app.use(cors())
 app.use(express.json());
