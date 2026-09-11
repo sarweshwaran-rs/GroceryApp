@@ -83,12 +83,12 @@ const Addresses = () => {
         const { data } = await api.put(`/addresses/${editingId}`, payload);
 
         setAddresses(data.addresses)
-        updateUser({ address: data.addresses })
+        updateUser({ addresses: data.addresses })
         toast.success("Address updated!")
       } else {
         const { data } = await api.post(`/addresses`, payload);
         setAddresses(data.addresses)
-        updateUser({ address: data.addresses })
+        updateUser({ addresses: data.addresses })
         toast.success("Address Added!")
       }
       resetForm()
