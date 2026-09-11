@@ -7,7 +7,7 @@ import 'dotenv/config'
 // Generate JWT Token
 const generateToekn = (id: string) => {
     return jwt.sign({id}, process.env.JWT_SECRET as string, {
-        expiresIn: "30"
+        expiresIn: "30d"
     })
 }
 
@@ -28,7 +28,11 @@ export const register = async (request: Request, response: Response) => {
         return response.status(400).json({message: "Please provide all fields"})
     }
 
-    const existingUser = await prisma.user.findUnique({where: email.toLowerCase()})
+    const existingUser = await prisma.user.findUnique({
+        where: {
+            email: email.toLowerCase(),
+        }
+    })
     
     if (existingUser) {
         return response.status(400).json({message: "User already exists with this email"})
@@ -63,7 +67,7 @@ export const login = async (request: Request, response: Response) => {
         return response.status(400).json({message: "Please provide email and password fields"})
     }
 
-    const user = await prisma.user.findUnique({where: email.toLowerCase(), include: {addresses: true}})
+    const user = await prisma.user.findUnique({where:{ email: email.toLowerCase()}, include: {addresses: true}})
 
     if (!user) {
         return response.status(401).json({message: "Invalid email or password"})

@@ -1,28 +1,27 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { dummyAddressData } from "../assets/assets";
 import type { Address } from "../types";
-import { ArrowLeftIcon, CheckIcon, ChevronRightIcon, CreditCardIcon, MapPinIcon, SpaceIcon } from "lucide-react";
+import { ArrowLeftIcon, CheckIcon, ChevronRightIcon, CreditCardIcon, MapPinIcon } from "lucide-react";
 import CheckoutAddress from "../components/Checkout/CheckoutAddress";
 import CheckoutPayment from "../components/Checkout/CheckoutPayment";
 import CheckoutReview from "../components/Checkout/CheckoutReview";
+import api from "../config/api";
+import { toast } from "react-hot-toast";
+import { isAxiosError } from "axios";
+import { useAuth } from "../context/AuthContext";
 
 const Checkout = () => {
   const navigate = useNavigate();
   const currency = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
 
-  const { items, cartTotal } = useCart();
-  const { user } = {
-    user: {
-      addresses: dummyAddressData
-    }
-  }
+  const { items, cartTotal, clearCart } = useCart();
+  const { user } = useAuth();
 
   const [step, setStep] = useState("address")
   const [loading, setLoading] = useState(false)
   const [address, setAddress] = useState<Address>({
-    _id: "",
+    id: "",
     label: "Home",
     address: "",
     city: "",
@@ -47,14 +46,44 @@ const Checkout = () => {
 
   const handlePlaceOrder = async () => {
     setLoading(true)
-    navigate("/orders")
+    try {
+      const orderData = {
+        items: items.map((item) => ({
+          product: item.product.id,
+          quantity: item.quantity,
+        })),
+        shippingAddress: address,
+        paymentMethod
+      }
+
+      const { data } = await api.post(`/orders`, orderData);
+      console.log(data)
+
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      clearCart()
+      toast.success("Order placed successfully")
+      navigate(`/orders/${data.order.id}`)
+    } catch (error: unknown) {
+      const message = isAxiosError<{ message?: string }>(error)
+        ? error?.response?.data?.message : error instanceof Error
+          ? error.message : undefined;
+
+      toast.error(message || "Failed to place order")
+    } finally {
+      setLoading(false);
+      scrollTo(0, 0);
+    }
   }
+
   // Populate address from user's default address
   useState(() => {
     if (user?.addresses?.length) {
       const defaultAddress = user.addresses.find((addr) => addr.isDefault) || user.addresses[0]
       setAddress({
-        _id: address?._id,
+        id: address?.id,
         label: address?.label,
         address: address?.address,
         city: address?.city,

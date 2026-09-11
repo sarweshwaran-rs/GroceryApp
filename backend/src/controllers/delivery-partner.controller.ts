@@ -37,10 +37,10 @@ export const loginPartner = async (request: Request, response: Response) => {
     }
 
     const token = generateToken(partner.id)
-    const { password: _, ...partnetData } = partner;
+    const { password: _, ...partnerData } = partner;
 
-    response.json(200).json({
-        partner: partnetData,
+    response.status(200).json({
+        partner: partnerData,
         token
     })
 }

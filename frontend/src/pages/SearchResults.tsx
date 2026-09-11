@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import type { Product } from "../types";
 import { Link, useSearchParams } from "react-router-dom";
-import { dummyProducts } from "../assets/assets";
 import { Home, Search } from "lucide-react";
 import Loading from "../components/Loading";
 import ProductCard from "../components/ProductCard";
+import api from "../config/api";
+import { toast } from "react-hot-toast";
 
 const SearchResults = () => {
 
@@ -15,9 +16,9 @@ const SearchResults = () => {
 
   useEffect(()=>{
     if (!query) return;
-    setLoading(true)
-    setProducts(dummyProducts.filter((p: any)=> p.name.toLowerCase().includes(query.toLowerCase())))
-    setLoading(false)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true)    
+    api.get(`/products?search=${encodeURIComponent(query)}`).then((response)=>setProducts(response.data.products)).catch((error)=>toast.error(error?.response.data.message || error?.message)).finally(()=>setLoading(false))
   },[query]);
   return (
     <div className="min-h-screen bg-app-cream">
@@ -53,7 +54,7 @@ const SearchResults = () => {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {products.map((product)=>(
-                <ProductCard key={product._id} product={product} /> 
+                <ProductCard key={product.id} product={product} /> 
               ))}
             </div>
           )

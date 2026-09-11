@@ -1,6 +1,7 @@
 import { XIcon } from "lucide-react";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const AddressForm = ({ resetForm, handleSubmit, form, setForm, editingId }: any) => {
     return (
         <>

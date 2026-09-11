@@ -25,7 +25,7 @@ const admin = async (request: Request, response: Response, next: NextFunction) =
         }
     } catch (error: any) {
         console.log(error);
-        response.status(401).json({ message: "Admin verification failed: ", error: error.message })
+        response.status(500).json({ message: "Admin verification failed: ", error: error.message })
     }
 }
 
