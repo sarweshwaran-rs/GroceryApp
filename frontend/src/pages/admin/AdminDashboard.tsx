@@ -19,32 +19,8 @@ const AdminDashboard = () => {
     const [stats, setStats] = useState<Stats | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // useEffect(() => {
-    //     api.get('/admin/stats').then((response)=> setStats(response.data)).catch((error)=>{console.error(error)}).finally(()=> setLoading(false))
-    // }, []);
-
     useEffect(() => {
-        console.log("🔵 AdminDashboard mounted");
-        console.log("🔑 Token:", localStorage.getItem("auth_token"));
-        console.log("👤 User:", localStorage.getItem("auth_user"));
-
-        api.get("/admin/stats")
-            .then((response) => {
-                console.log("🟢 ADMIN STATS SUCCESS");
-                console.log("Stats:", response.data);
-
-                setStats(response.data);
-            })
-            .catch((error) => {
-                console.error("🔴 ADMIN STATS FAILED");
-                console.error("Status:", error.response?.status);
-                console.error("Data:", error.response?.data);
-                console.error("Message:", error.message);
-                console.error("Full error:", error);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
+        api.get('/admin/stats').then((response)=> setStats(response.data)).catch((error)=>{console.error(error)}).finally(()=> setLoading(false))
     }, []);
 
     const cards = stats
