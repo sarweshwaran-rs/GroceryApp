@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { categoriesData, dummyProducts } from "../../assets/assets";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { categoriesData } from "../../assets/assets";
 import { ArrowLeftIcon } from "lucide-react";
 import Loading from "../../components/Loading";
+import api from "../../config/api";
+import { toast } from "react-hot-toast";
 
 const AdminProductForm = () => {
     const { id } = useParams();
     const isEdit = Boolean(id);
+    const navigate = useNavigate();
 
     const [loading, setLoading] = useState(isEdit);
     const [saving, setSaving] = useState(false);
@@ -26,17 +29,74 @@ const AdminProductForm = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (isEdit) {
-                setFormData(() => dummyProducts.find((p) => p._id === id) as any)
+            try {
+                if (isEdit) {
+                    const { data: prodData } = await api.get(`/products/${id}`);
+                    const p = prodData.product;
+                    setFormData({
+                        name: p.name,
+                        description: p.description,
+                        price: p.price.toString(),
+                        originalPrice: p.originalPrice ? p.originalPrice.toString() : "",
+                        image: p.image,
+                        category: p.category,
+                        unit: p.unit,
+                        stock: p.stock.toString(),
+                        isOrganic: p.isOrganic,
+                    })
+                }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: any) {
+                toast.error(error.message || `Unable to update product with id: ${id}`)
+            } finally {
+                setLoading(false);
             }
-            setLoading(false)
         };
         fetchData();
     }, [id, isEdit]);
 
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
+        setSaving(true);
+        try {
+            let finalImageUrl = formData.image;
 
+            if (imageFile) {
+                const formDataUpload = new FormData();
+                formDataUpload.append("image", imageFile)
+
+                const { data } = await api.post("/upload", formDataUpload)
+                finalImageUrl = data.url;
+            }
+
+            if (!finalImageUrl) {
+                toast.error("Please upload a product image")
+                setSaving(false);
+                return;
+            }
+
+            const payLoad = {
+                ...formData, 
+                image: finalImageUrl,
+                price: Number(formData.price),
+                originalPrice: formData.originalPrice ? Number(formData.originalPrice) : 0,
+                stock: Number(formData.stock),
+            }
+
+            if (isEdit) {
+                await api.put(`/products/${id}`, payLoad)
+                toast.success("Product updated successfully")
+            } else {
+                await api.post("/products", payLoad);
+                toast.success("Product Created successfully");
+            }
+            navigate("/admin/products")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to save product");
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (

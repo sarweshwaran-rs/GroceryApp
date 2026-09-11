@@ -1,15 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Location, Order } from "../types";
-import { dummyDashboardOrdersData } from "../assets/assets";
 import Loading from "../components/Loading";
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon } from "lucide-react";
 import OrderOTP from "../components/OrderTracking/OrderOTP";
 import LiveMap from "../components/OrderTracking/LiveMap";
 import OrderTimeLine from "../components/OrderTracking/OrderTimeLine";
+import api from "../config/api";
 
 const OrderTracking = () => {
 
@@ -22,9 +19,37 @@ const OrderTracking = () => {
   const [liveLocation, setLiveLocation] = useState<Location>({ lat: 0, lng: 0 });
 
   useEffect(() => {
-    setOrder(dummyDashboardOrdersData.find((order) => order._id === id) as any)
-    setLoading(false)
+    api.get(`/orders/${id}`).then((response) => setOrder(response.data.order)).catch(() => navigate('/orders')).finally(() => setLoading(false))
   }, [id, navigate])
+
+  // live location every 10 seconds
+  useEffect(() => {
+    if (!order || ["Delivered", "Cancelled", "Placed"].includes(order.status)) return;
+
+    const fetchLocation = async () => {
+      try {
+        const { data } = await api.get(`/orders/${id}/location`)
+
+        if (data.liveLocation?.lat && data.liveLocation?.lng && data.liveLocation?.updatedAt) {
+          setLiveLocation({
+            lat: data.liveLocation.lat,
+            lng: data.liveLocation.lng,
+          })
+
+          // Also update order status if it changed
+          if (data.status && data.status !== order.status) {
+            setOrder((prev) => prev ? { ...prev, status: data.status } : prev)
+          }
+        }
+      } catch (error: unknown) {
+        console.log(error)
+      }
+    }
+    fetchLocation()
+    const interval = setInterval(fetchLocation, 10000)
+    return () => clearInterval(interval)
+  }, [id, order, order?.status]
+  )
 
   if (loading) return <Loading />
   if (!order) return null
@@ -40,7 +65,7 @@ const OrderTracking = () => {
         {/* Order Id, data, status */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-app-green">Order #{order!._id.slice(-8).toUpperCase()}</h1>
+            <h1 className="text-2xl font-semibold text-app-green">Order #{order!.id.slice(-8).toUpperCase()}</h1>
             <p className="text-sm text-app-text-light mt-1">Placed on {new Date(order!.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</p>
           </div>
 

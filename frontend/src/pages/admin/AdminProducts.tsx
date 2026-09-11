@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { PlusIcon, EditIcon, XIcon } from "lucide-react";
 import type { Product } from "../../types";
 import Loading from "../../components/Loading";
-import { dummyProducts } from "../../assets/assets";
+import { toast } from "react-hot-toast";
+import api from "../../config/api";
 
 const AdminProducts = () => {
 
@@ -13,19 +14,31 @@ const AdminProducts = () => {
     const [loading, setLoading] = useState(true);
 
     const fetchProducts = async () => {
-        setProducts(dummyProducts);
-        setTimeout(() => {
-            setLoading(false);
-        }, 1000);
+        try {
+           const { data } = await api.get("/products")
+           setProducts(data.products);
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Unable to fetch orders");
+        } finally {
+            setLoading(false)
+        }
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchProducts();
     }, []);
 
     const handleMarkOutOfStock = async (id: string, name: string) => {
         if (!window.confirm(`Are you sure you want to mark "${name}" as out of stock?`)) return;
-        console.log(id);
+
+        try {
+            await api.delete(`/products/${id}`)
+            toast.success("Product marked as out of stock");
+            fetchProducts();
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Failed to update product");
+        }
     };
 
     if (loading) return <Loading />
@@ -56,7 +69,7 @@ const AdminProducts = () => {
                                 </tr>
                             ) : (
                                 products.map(product => (
-                                    <tr key={product._id} className="hover:bg-zinc-50/50 transition-colors">
+                                    <tr key={product.id} className="hover:bg-zinc-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <img src={product.image} alt={product.name} className="size-12 rounded-lg object-cover" />
@@ -74,10 +87,10 @@ const AdminProducts = () => {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <Link to={`/admin/products/${product._id}/edit`} className="p-2 text-zinc-500 hover:text-app-orange bg-zinc-100 hover:bg-orange-50 rounded-lg transition-colors">
+                                                <Link to={`/admin/products/${product.id}/edit`} className="p-2 text-zinc-500 hover:text-app-orange bg-zinc-100 hover:bg-orange-50 rounded-lg transition-colors">
                                                     <EditIcon className="size-4" />
                                                 </Link>
-                                                <button onClick={() => handleMarkOutOfStock(product._id, product.name)} title="Mark Out of Stock" className="p-2 text-zinc-500 hover:text-red-600 bg-zinc-100 hover:bg-red-50 rounded-lg transition-colors">
+                                                <button onClick={() => handleMarkOutOfStock(product.id, product.name)} title="Mark Out of Stock" className="p-2 text-zinc-500 hover:text-red-600 bg-zinc-100 hover:bg-red-50 rounded-lg transition-colors">
                                                     <XIcon className="size-4" />
                                                 </button>
                                             </div>

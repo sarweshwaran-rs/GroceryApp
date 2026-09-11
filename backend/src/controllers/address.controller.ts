@@ -105,8 +105,8 @@ export const updateAddress = async (request: Request, response: Response) => {
     if (state) data.state = state;
     if (zip) data.zip = zip;
     if (isDefault !== undefined) data.isDefault = isDefault;
-    if (lat !== null) data.lat = Number(lat);
-    if (lng !== null) data.lng = Number(lng);
+    if (lat != null) data.lat = Number(lat);
+    if (lng != null) data.lng = Number(lng);
 
     try {
         await prisma.address.update({

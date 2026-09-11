@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { dummyAdminDashboardData, statusColors } from "../../assets/assets";
+import { statusColors } from "../../assets/assets";
 import { AlertTriangleIcon, PackageIcon, ShoppingBagIcon, UsersIcon } from "lucide-react";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
+import api from "../../config/api";
 
 interface Stats {
     totalOrders: number;
     totalUsers: number;
-    totalProducts: number;
+    totalProduct: number;
     outOfStock: number;
     recentOrders: any[];
 }
@@ -18,11 +19,32 @@ const AdminDashboard = () => {
     const [stats, setStats] = useState<Stats | null>(null);
     const [loading, setLoading] = useState(true);
 
+    // useEffect(() => {
+    //     api.get('/admin/stats').then((response)=> setStats(response.data)).catch((error)=>{console.error(error)}).finally(()=> setLoading(false))
+    // }, []);
+
     useEffect(() => {
-        setTimeout(() => {
-            setStats(dummyAdminDashboardData);
-            setLoading(false);
-        }, 1000);
+        console.log("🔵 AdminDashboard mounted");
+        console.log("🔑 Token:", localStorage.getItem("auth_token"));
+        console.log("👤 User:", localStorage.getItem("auth_user"));
+
+        api.get("/admin/stats")
+            .then((response) => {
+                console.log("🟢 ADMIN STATS SUCCESS");
+                console.log("Stats:", response.data);
+
+                setStats(response.data);
+            })
+            .catch((error) => {
+                console.error("🔴 ADMIN STATS FAILED");
+                console.error("Status:", error.response?.status);
+                console.error("Data:", error.response?.data);
+                console.error("Message:", error.message);
+                console.error("Full error:", error);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }, []);
 
     const cards = stats
@@ -30,7 +52,7 @@ const AdminDashboard = () => {
         [
             { label: "Total Orders", value: stats.totalOrders, icon: ShoppingBagIcon },
             { label: "Total Users", value: stats.totalUsers, icon: UsersIcon },
-            { label: "Total Products", value: stats.totalProducts, icon: PackageIcon },
+            { label: "Total Products", value: stats.totalProduct, icon: PackageIcon },
             { label: "Out of Stock", value: stats.outOfStock, icon: AlertTriangleIcon },
         ]
         : [];
@@ -81,8 +103,8 @@ const AdminDashboard = () => {
                                 </tr>
                             ) : (
                                 stats?.recentOrders.map((order: any) => (
-                                    <tr key={order._id} className="hover:bg-zinc-50/50 transition-colors">
-                                        <td className="px-6 py-4 font-mono text-xs text-zinc-500">#{order._id.slice(-6).toUpperCase()}</td>
+                                    <tr key={order.id} className="hover:bg-zinc-50/50 transition-colors">
+                                        <td className="px-6 py-4 font-mono text-xs text-zinc-500">#{order.id.slice(-6).toUpperCase()}</td>
                                         <td className="px-6 py-4">
                                             <p className="font-medium text-zinc-900">{order.user?.name || "-"}</p>
                                             <p className="text-xs text-zinc-500">{order.user?.email || ""}</p>

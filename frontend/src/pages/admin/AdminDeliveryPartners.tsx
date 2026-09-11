@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import type { DeliveryPartner } from "../../types";
-import { dummyDeliveryPartnerData } from "../../assets/assets";
 import Loading from "../../components/Loading";
 import { MailIcon, PhoneIcon, PlusIcon, TruckIcon, XIcon } from "lucide-react";
+import { toast } from "react-hot-toast";
+import api from "../../config/api";
 
 const AdminDeliveryPartners = () => {
     const [partners, setPartners] = useState<DeliveryPartner[]>([]);
@@ -14,20 +15,50 @@ const AdminDeliveryPartners = () => {
     });
 
     const fetchPartners = async () => {
-        setPartners(dummyDeliveryPartnerData as any);
-        setTimeout(() => setLoading(false), 1000)
+        try {
+            const { data } = await api.get("/admin/partners")
+
+            setPartners(data.partners)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || "Unable to fetch delivery partners")
+        } finally {
+            setLoading(false)
+        }
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchPartners();
     }, []);
 
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
+        setSaving(true);
+        try {
+            await api.post("/admin/partners", form);
+            toast.success("Partner onboarded successfully!")
+            setShowForm(false);
+            setForm({ name: "", email: "", password: "", phone: "", vehicleType: "bike" });
+            fetchPartners()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || "Unable to add new delivery partner");
+        } finally {
+            setSaving(false);
+        }
     };
 
     const toggleActive = async (id: string, isActive: boolean) => {
         console.log(id, isActive);
+        try {
+            await api.put(`admin/partners/${id}`, {isActive: !isActive});
+            toast.success(isActive ? "Partner deactivated" : "Partner activated");
+            fetchPartners();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || "Unable to update status");
+        }
     };
 
     if (loading) return <Loading />
@@ -52,7 +83,7 @@ const AdminDeliveryPartners = () => {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols- xl:grid-cols-3 gap-4">
                     {partners.map((p) => (
-                        <div key={p._id} className="bg-white rounded-2xl border border-app-border p-5 space-y-3">
+                        <div key={p.id} className="bg-white rounded-2xl border border-app-border p-5 space-y-3">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="size-10 rounded-full bg-app-green flex-center">
@@ -71,7 +102,7 @@ const AdminDeliveryPartners = () => {
                                 <p className="flex items-center gap-2"><MailIcon className="w-3.5 h-3.5 text-zinc-400" /> {p.email}</p>
                                 <p className="flex items-center gap-2"><PhoneIcon className="w-3.5 h-3.5 text-zinc-400" />{p.phone}</p>
                             </div>
-                            <button onClick={() => toggleActive(p._id, p.isActive)} className={`w-full py-2 text-xs font-medium rounded-lg transition-colors ${p.isActive ? "bg-red-50 text-red-600 hover:bg-red-100" : "bg-green-50 text-green-600 hover:bg-green-100"}`}>
+                            <button onClick={() => toggleActive(p.id, p.isActive)} className={`w-full py-2 text-xs font-medium rounded-lg transition-colors ${p.isActive ? "bg-red-50 text-red-600 hover:bg-red-100" : "bg-green-50 text-green-600 hover:bg-green-100"}`}>
                                 {p.isActive ? "Deactivate" : "Activate"}
                             </button>
                         </div>

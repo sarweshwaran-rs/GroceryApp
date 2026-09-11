@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { heroSectionData } from "../assets/assets";
 import { Link } from "react-router-dom";
 import { BikeIcon, Loader2, LockIcon, MailIcon, UserIcon } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "react-hot-toast";
+import { isAxiosError } from "axios";
 
 const Login = () => {
   const [isLoginState, setIsLoginState] = useState(true)
@@ -9,11 +12,28 @@ const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const { login, register } = useAuth();
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => window.location.href = "/", 1000)
+
+    try {
+      if (isLoginState) {
+        await login(email, password)
+      } else {
+        await register(name, email, password)
+      }
+    } catch (error: unknown) {
+      const message = isAxiosError<{ message?: string }>(error)
+        ? error.response?.data.message
+        : error instanceof Error
+          ? error.message : undefined;
+
+      toast.error(message || "Error")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

@@ -5,10 +5,10 @@ import { assignDeliveryPartner, createDeliveryPartner, getAdminStats, getDeliver
 
 const adminRouter = express.Router();
 
-adminRouter.get("/stats", admin, auth, getAdminStats)
-adminRouter.get("/partners", admin, auth, getDeliveryPartners)
-adminRouter.post("/partners", admin, auth, createDeliveryPartner)
-adminRouter.put("/partners/:id", admin, auth, updateDeliveryPartner);
-adminRouter.put("/ordes/:id/assign", admin, auth, assignDeliveryPartner)
+adminRouter.get("/stats",auth, admin, getAdminStats)
+adminRouter.get("/partners", auth, admin,getDeliveryPartners)
+adminRouter.post("/partners", auth, admin, createDeliveryPartner)
+adminRouter.put("/partners/:id", auth, admin,updateDeliveryPartner);
+adminRouter.put("/orders/:id/assign", auth, admin,assignDeliveryPartner)
 
 export default adminRouter;

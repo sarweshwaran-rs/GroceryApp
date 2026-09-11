@@ -1,12 +1,12 @@
-export type Location = {lat: number, lng:number}
+export type Location = { lat: number, lng: number }
 
 export interface User {
-    _id: string;
+    id: string;
     name: string;
     email: string;
     phone: string;
     avatar: string;
-    address: Address[];
+    addresses: Address[];
     isAdmin?: boolean;
     createdAt: string;
     updatedAt: string;
@@ -19,7 +19,7 @@ export interface UserProps {
 }
 
 export interface Address {
-    _id: string;
+    id: string;
     label: string;
     address: string;
     city: string;
@@ -37,7 +37,7 @@ export interface Category {
 }
 
 export interface Product {
-    _id: string;
+    id: string;
     name: string;
     description: string;
     price: number;
@@ -67,8 +67,8 @@ export interface OrderItem {
     unit: string;
 }
 
-export interface DeliveryPartner { 
-    _id: string;
+export interface DeliveryPartner {
+    id: string;
     name: string;
     email: string;
     phone: string;
@@ -79,17 +79,17 @@ export interface DeliveryPartner {
 }
 
 export interface Order {
-    _id: string;
-    user: string |{ _id: string; name: string; email: string; phone?: string};
+    id: string;
+    user: string | { id: string; name: string; email: string; phone?: string };
     items: OrderItem[];
-    shippingAddress: Omit<Address, "_id" | "isDefault">;
+    shippingAddress: Omit<Address, "id" | "isDefault">;
     paymentMethod: string;
     subtotal: number;
     deliveryFee: number;
     tax: number;
     total: number;
     status: string;
-    statusHistory: {status: string; timestamp: string; note: string}[];
+    statusHistory: { status: string; timestamp: string; note: string }[];
     deliveryPartner: DeliveryPartner | null;
     deliveryOtp: string;
     isPaid: boolean;

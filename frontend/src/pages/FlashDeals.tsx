@@ -1,19 +1,17 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import type { Product } from "../types";
-import { dummyProducts } from "../assets/assets";
 import { Zap } from "lucide-react";
 import Loading from "../components/Loading";
 import ProductCard from "../components/ProductCard";
+import api from "../config/api";
+import { toast } from "react-hot-toast";
 
 const FlashDeals = () => {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   
   useEffect(()=>{
-    setProducts(dummyProducts.filter((p:any) => p.stock > 0))
-    setTimeout(()=>setLoading(false),1000)
+    api.get("/products/flash-deals").then((response)=>setProducts(response.data.products)).catch((error)=>toast.error(error.response.data.message || error?.message)).finally(()=> setLoading(false))
   },[])
 
 
@@ -45,7 +43,7 @@ const FlashDeals = () => {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols3 md:grid-cols-4 xl:grid-cols-5 gap-4">
                   {products.map((product)=>( product.stock > 0 &&
-                    <ProductCard key={product._id} product={product} />
+                    <ProductCard key={product.id} product={product} />
                   ))}
               </div>
             )

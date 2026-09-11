@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
 import bcrypt from 'bcrypt';
-import { pipeTo } from "node:stream/iter";
 
 // Get Admin Dashboard data
 // GET /admin/stats
@@ -40,14 +39,14 @@ export const getAdminStats = async (request: Request, response: Response) => {
     ])
 
     response.status(200).json({
-        totalOrders, 
-        totalUsers, 
-        totalProduct, 
-        outOfStock, 
-        totalPartners, 
+        totalOrders,
+        totalUsers,
+        totalProduct,
+        outOfStock,
+        totalPartners,
         recentOrders
     })
-} 
+}
 
 // Get Delivery Partners list for admin
 // GET /api/admin/partners
@@ -58,7 +57,7 @@ export const getDeliveryPartners = async (request: Request, resposne: Response) 
         }
     })
 
-    resposne.status(200).json({partners})
+    resposne.status(200).json({ partners })
 }
 
 
@@ -68,22 +67,22 @@ export const createDeliveryPartner = async (request: Request, response: Response
     const { name, email, password, phone, vehicleType } = request.body;
 
     if (!name || !email || !password || !phone) {
-        return response.status(404).json({message: "Please provide all required fields"})
+        return response.status(404).json({ message: "Please provide all required fields" })
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const partner = await prisma.deliveryPartner.create( {
+    const partner = await prisma.deliveryPartner.create({
         data: {
-            name, 
-            email: email.toLowerCase(), 
-            password: hashedPassword, 
-            phone, 
+            name,
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            phone,
             vehicleType
         }
     })
 
-    return response.status(201).json({partner});
+    return response.status(201).json({ partner });
 }
 
 // Update delivery partner
@@ -93,22 +92,22 @@ export const updateDeliveryPartner = async (request: Request, response: Response
 
     const data: any = {};
 
-    if (name) data.name = name;
-    if (phone) data.phone = phone;
-    if (vehicleType) data.vehicleType = vehicleType;
-    if (isActive) data.isActive = isActive;
-    
+    if (name !== undefined) data.name = name;
+    if (phone !== undefined) data.phone = phone;
+    if (vehicleType !== undefined) data.vehicleType = vehicleType;
+    if (isActive !== undefined) data.isActive = isActive;
+
     try {
         const partner = await prisma.deliveryPartner.update({
             where: {
                 id: request.params.id as string
-            }, 
+            },
             data
         })
 
-        return response.status(200).json({partner})
+        return response.status(200).json({ partner })
     } catch (error: any) {
-        return response.status(404).json({message: "Partner not found"});
+        return response.status(404).json({ message: "Partner not found" });
     }
 }
 
@@ -119,11 +118,11 @@ export const assignDeliveryPartner = async (request: Request, response: Response
     const { partnerId } = request.body;
 
     const order = await prisma.order.findUnique({
-        where: {id: request.params.id as string},
+        where: { id: request.params.id as string },
     })
 
     const partner = await prisma.deliveryPartner.findUnique({
-        where: {id: partnerId},
+        where: { id: partnerId },
     })
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
@@ -135,7 +134,7 @@ export const assignDeliveryPartner = async (request: Request, response: Response
     if (order!.status === "Placed" || order!.status === "Confirmed") {
         status = "Assigned";
         history.push({
-            status: "Assogmed",
+            status: "Assigned",
             note: `Assigned to ${partner!.name}`,
             timestamp: new Date()
         })
@@ -144,13 +143,13 @@ export const assignDeliveryPartner = async (request: Request, response: Response
     await prisma.order.update({
         where: { id: order!.id },
         data: {
-            deliveryPartnerID: partner!.id,
+            deliveryPartnerId: partner!.id,
             deliveryOtp: otp,
             status,
             statusHistory: history
         }
     })
 
-    return response.status(401).json({order})
+    return response.status(200).json({ order })
 }
 
